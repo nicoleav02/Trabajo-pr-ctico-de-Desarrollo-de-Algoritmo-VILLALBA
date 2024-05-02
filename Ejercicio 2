@@ -1,0 +1,87 @@
+// Paso 1: Preprocesamiento de los datos
+// 1. Cargar los datos en un DataFrame de Pandas
+data_url = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine/wine.data"
+column_names = ['Class', 'Alcohol', 'Malic acid', 'Ash', 'Alcalinity of ash', 'Magnesium',
+                'Total phenols', 'Flavanoids', 'Nonflavanoid phenols', 'Proanthocyanins',
+                'Color intensity', 'Hue', 'OD280/OD315 of diluted wines', 'Proline']
+wine_data = pd.read_csv(data_url, names=column_names)
+
+// 2. Verificar y manejar los valores faltantes
+missing_values = wine_data.isnull().sum().sum()
+if missing_values == 0:
+    print("No hay valores faltantes en los datos.")
+else:
+    print("Se encontraron valores faltantes. Realizar el manejo correspondiente.")
+
+// 3. Dividir los datos en características (X) y etiquetas (y)
+X = wine_data.drop('Class', axis=1)
+y = wine_data['Class']
+
+// Mostrar las primeras filas del DataFrame
+print("\nPrimeras filas del DataFrame:")
+print(wine_data.head())
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+
+// Paso 2: Construcción del modelo de red neuronal
+// 1. Importar las bibliotecas necesarias de TensorFlow y Keras
+
+// 2. Definir la arquitectura del modelo de red neuronal
+model = Sequential()
+model.add(Dense(64, activation='relu', input_shape=(13,)))  # Capa oculta con 64 neuronas y función de activación ReLU
+model.add(Dense(32, activation='relu'))  # Capa oculta con 32 neuronas y función de activación ReLU
+model.add(Dense(3, activation='softmax'))  # Capa de salida con 3 neuronas y función de activación Softmax
+
+// 3. Compilar el modelo con una función de pérdida y un optimizador
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
+// Paso 3: Entrenamiento del modelo
+// 1. Entrenar el modelo con los datos de entrenamiento
+history = model.fit(X_train, y_train, epochs=50, batch_size=32, validation_split=0.2, verbose=1)
+
+// Paso 4: Evaluación del modelo
+// 1. Evaluar el rendimiento del modelo utilizando los datos de prueba
+test_loss, test_accuracy = model.evaluate(X_test, y_test)
+
+// 2. Mostrar las métricas de interés
+print("Pérdida en los datos de prueba:", test_loss)
+print("Precisión en los datos de prueba:", test_accuracy)
+
+//Paso 5: Optimización del modelo
+
+from sklearn.model_selection import GridSearchCV
+from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
+
+// Definir una función para crear el modelo de red neuronal
+def create_model():
+    model = Sequential()
+    model.add(Dense(64, activation='relu', input_shape=(13,)))
+    model.add(Dense(32, activation='relu'))
+    model.add(Dense(3, activation='softmax'))
+    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+    return model
+
+// Crear el modelo de KerasClassifier
+model = KerasClassifier(build_fn=create_model, verbose=0)
+
+// Definir los parámetros para la búsqueda de hiperparámetros
+param_grid = {'batch_size': [16, 32, 64],
+              'epochs': [50, 100, 200]}
+
+// Realizar la búsqueda de hiperparámetros
+grid = GridSearchCV(estimator=model, param_grid=param_grid, cv=3)
+grid_result = grid.fit(X_train, y_train)
+
+// Mostrar los resultados de la búsqueda de hiperparámetros
+print("Mejores parámetros encontrados:", grid_result.best_params_)
+print("Mejor precisión encontrada:", grid_result.best_score_)
+
+// Guardar el modelo entrenado
+model.save("wine_classification_model.h5")
+
+// Cargar el modelo entrenado
+from tensorflow.keras.models import load_model
+loaded_model = load_model("wine_classification_model.h5")
+
+// Hacer predicciones con el modelo cargado
+predictions = loaded_model.predict(X_new_data)
